@@ -1,7 +1,6 @@
 package com.dang.commonlib.messaging;
 
 import com.dang.commonlib.exception.MissingTopicDefinitionException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -14,10 +13,15 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class MessageBus {
     private final KafkaTemplate<String, SpecificRecord> kafkaTemplate;
     private final Environment environment;
+
+    public MessageBus(KafkaTemplate<String, SpecificRecord> kafkaTemplate, Environment environment) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.environment = environment;
+    }
+
     public void sendMessage(SpecificRecord record) {
         try {
             log.info("Sending message: {}", record);
