@@ -19,7 +19,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/thomasdang1996/pear-store-be</url>
+            <url>https://maven.pkg.github.com/thomasdang1996/common-lib</url>
         </repository>
     </distributionManagement>
 
