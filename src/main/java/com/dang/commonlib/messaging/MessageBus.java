@@ -4,12 +4,12 @@ import com.dang.commonlib.exception.MissingTopicDefinitionException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -22,20 +22,23 @@ public class MessageBus {
         this.environment = environment;
     }
 
-    public void sendMessage(SpecificRecord record) {
-        try {
-            log.info("Sending message: {}", record);
-            String topic = getTopic(record);
-            SendResult<String, SpecificRecord> result = kafkaTemplate
-                    .send(topic, record)
-                    .get();
+    public void sendMessage(SpecificRecord record, List<Header> headers) {
+        log.info("Sending message: {}", record);
 
-            ProducerRecord<String, SpecificRecord> producerRecord = result.getProducerRecord();
-            log.info("Message sent: {}", producerRecord);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+        ProducerRecord<String, SpecificRecord> producerRecord =
+                new ProducerRecord<>(
+                        getTopic(record),
+                        record
+                );
+
+        for (Header header : headers) {
+            producerRecord.headers().add(header);
         }
+
+        kafkaTemplate.send(producerRecord);
+        log.info("Message sent: {}", producerRecord);
     }
+
     private String getTopic(SpecificRecord record) {
         String topicProperty = this
                 .getClass()

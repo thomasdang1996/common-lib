@@ -6,6 +6,7 @@ import lombok.Data;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,9 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -36,29 +36,19 @@ public class MessageBusTest {
     @Test
     public void sendMessage_success() {
         String topic = "some-topic-01";
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<SpecificRecord> recordCaptor = ArgumentCaptor.forClass(SpecificRecord.class);
+        ArgumentCaptor<ProducerRecord<String, SpecificRecord>> producerRecordCaptor =
+                ArgumentCaptor.forClass(ProducerRecord.class);
         MockMessage message = new MockMessage("name", "email");
 
         when(environment.getProperty(isA(String.class)))
                 .thenReturn(topic);
 
-        when(kafkaTemplate.send(isA(String.class), isA(SpecificRecord.class)))
-                .thenReturn(
-                        CompletableFuture.completedFuture(
-                                new SendResult<>(
-                                        new ProducerRecord<>(topic, message),
-                                        null
-                                )
-                        )
-                );
-
-        messageBus.sendMessage(message);
+        messageBus.sendMessage(message, List.of(new RecordHeader("messageId", "12234id".getBytes())));
 
         verify(kafkaTemplate)
-                .send(stringCaptor.capture(), recordCaptor.capture());
+                .send(producerRecordCaptor.capture());
 
-        assertThat(recordCaptor.getValue())
+        assertThat(producerRecordCaptor.getValue().value())
                 .isEqualTo(message);
     }
 
@@ -68,7 +58,7 @@ public class MessageBusTest {
         when(environment.getProperty(isA(String.class)))
                 .thenReturn(null);
 
-        assertThatThrownBy(() -> messageBus.sendMessage(message))
+        assertThatThrownBy(() -> messageBus.sendMessage(message, List.of()))
                 .isInstanceOf(MissingTopicDefinitionException.class)
                 .hasMessage("Missing or null property com.dang.commonlib.messaging.com.dang.commonlib.messaging.MessageBusTest.MockMessage.topic");
     }
