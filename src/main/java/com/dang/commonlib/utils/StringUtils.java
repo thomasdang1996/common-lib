@@ -3,6 +3,7 @@ package com.dang.commonlib.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.avro.specific.SpecificRecord;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,13 +15,25 @@ public class StringUtils {
 
     public String toString(Object object) {
         try {
+            objectMapper.addMixIn(
+                    SpecificRecord.class,
+                    IgnoreAvroMixIn.class
+            );
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Object toObject(String objectString, Class<Object> classType) {
-        return objectMapper.convertValue(objectString, classType);
+    public <T> T toObject(String objectString, Class<T> classType) {
+        try {
+            objectMapper.addMixIn(
+                    SpecificRecord.class,
+                    IgnoreAvroMixIn.class
+            );
+            return objectMapper.readValue(objectString, classType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

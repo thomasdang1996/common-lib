@@ -3,6 +3,7 @@ package com.dang.commonlib.transaction;
 import com.dang.commonlib.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.specific.SpecificRecord;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -54,14 +55,14 @@ public class TransactionSynchronizer {
         log.info("Continuing transaction");
     }
 
-    public Object getReplyMessage(UUID eventId) {
+    public SpecificRecord getReplyMessage(UUID eventId) {
         return stringUtils.toObject(
                 transactionRepository
                         .getReplyMessageByEventId(eventId)
                         .orElseThrow(
                                 () -> new RuntimeException("ReplyMessage was not found, eventId: " + eventId)
                         ),
-                Object.class
+                SpecificRecord.class
         );
     }
 
