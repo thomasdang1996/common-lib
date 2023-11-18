@@ -8,10 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
-    @Query("SELECT t.threadId FROM Transaction t WHERE t.eventId =?1")
-    Optional<Long> getThreadIdByEventId(UUID eventId);
 
-    @Query("UPDATE Transaction t SET t.responseMessage=?2 WHERE eventId=?1")
+    @Query("UPDATE Transaction t SET t.replyMessage=?2 WHERE t.messageId=?1")
     @Modifying
-    Optional<Transaction> updateResponseMessageByEventId(UUID eventId, String responseMessage);
+    Optional<Transaction> updateResponseMessageByEventId(UUID messageId, String replyMessage);
 }

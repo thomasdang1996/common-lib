@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StringUtils {
 
-    private final ObjectMapper objectMapper;
 
+    private final ObjectMapper objectMapper;
 
     public String toString(Object object) {
         try {
