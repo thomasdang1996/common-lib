@@ -1,6 +1,8 @@
 package com.dang.commonlib.messaging;
 
 import com.dang.commonlib.exception.MissingTopicDefinitionException;
+import com.dang.commonlib.messaging.enums.HeaderEnum;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -16,22 +18,18 @@ import java.util.UUID;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MessageBus {
     private final KafkaTemplate<String, SpecificRecord> kafkaTemplate;
     private final Environment environment;
 
-    public MessageBus(KafkaTemplate<String, SpecificRecord> kafkaTemplate, Environment environment) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.environment = environment;
-    }
-
-    public void sendMessage(SpecificRecord record, Map<String, String> headerMap) {
+    public void sendMessage(SpecificRecord record, Map<HeaderEnum, String> headerMap) {
         log.info("Sending message: {}", record);
 
         List<RecordHeader> headers = headerMap
                 .entrySet()
                 .stream()
-                .map(h -> new RecordHeader(h.getKey(), h.getValue().getBytes()))
+                .map(h -> new RecordHeader(h.getKey().getValue(), h.getValue().getBytes()))
                 .toList();
 
         ProducerRecord<String, SpecificRecord> producerRecord =

@@ -1,6 +1,7 @@
 package com.dang.commonlib.messaging;
 
 import com.dang.commonlib.exception.MissingTopicDefinitionException;
+import com.dang.commonlib.messaging.enums.HeaderEnum;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.avro.Schema;
@@ -42,7 +43,7 @@ public class MessageBusTest {
         when(environment.getProperty(isA(String.class)))
                 .thenReturn(topic);
 
-        messageBus.sendMessage(message, Map.of("messageId", "12234id"));
+        messageBus.sendMessage(message, Map.of(HeaderEnum.MESSAGE_ID, "12234id"));
 
         verify(kafkaTemplate)
                 .send(producerRecordCaptor.capture());
