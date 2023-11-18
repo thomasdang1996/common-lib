@@ -65,6 +65,17 @@ public class TransactionSynchronizer {
         );
     }
 
+    public Object getRequestMessage(UUID eventId) {
+        return stringUtils.toObject(
+                transactionRepository
+                        .getRequestMessageByEventId(eventId)
+                        .orElseThrow(
+                                () -> new RuntimeException("RequestMessage was not found, eventId: " + eventId)
+                        ),
+                Object.class
+        );
+    }
+
     private Thread getThread(long threadId) {
         return Thread.getAllStackTraces()
                 .keySet()

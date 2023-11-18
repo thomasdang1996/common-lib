@@ -15,4 +15,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
 
     @Query("SELECT t.replyMessage FROM Transaction t WHERE t.messageId=?1")
     Optional<String> getReplyMessageByEventId(UUID messageId);
+
+    @Query("SELECT t.requestMessage FROM Transaction t WHERE t.messageId=?1")
+    Optional<String> getRequestMessageByEventId(UUID messageId);
 }
