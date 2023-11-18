@@ -54,6 +54,17 @@ public class TransactionSynchronizer {
         log.info("Continuing transaction");
     }
 
+    public Object getReplyMessage(UUID eventId) {
+        return stringUtils.toObject(
+                transactionRepository
+                        .getReplyMessageByEventId(eventId)
+                        .orElseThrow(
+                                () -> new RuntimeException("ReplyMessage was not found, eventId: " + eventId)
+                        ),
+                Object.class
+        );
+    }
+
     private Thread getThread(long threadId) {
         return Thread.getAllStackTraces()
                 .keySet()
