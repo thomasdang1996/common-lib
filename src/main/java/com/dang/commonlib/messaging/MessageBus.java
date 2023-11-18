@@ -5,11 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -22,8 +25,14 @@ public class MessageBus {
         this.environment = environment;
     }
 
-    public void sendMessage(SpecificRecord record, List<Header> headers) {
+    public void sendMessage(SpecificRecord record, Map<String, String> headerMap) {
         log.info("Sending message: {}", record);
+
+        List<RecordHeader> headers = headerMap
+                .entrySet()
+                .stream()
+                .map(h -> new RecordHeader(h.getKey(), h.getValue().getBytes()))
+                .toList();
 
         ProducerRecord<String, SpecificRecord> producerRecord =
                 new ProducerRecord<>(
@@ -52,4 +61,25 @@ public class MessageBus {
         }
         return topic;
     }
+
+    public void sendMessage(SpecificRecord record, UUID messageId) {
+        log.info("Sending message: {}", record);
+
+        ProducerRecord<String, SpecificRecord> producerRecord =
+                new ProducerRecord<>(
+                        getTopic(record),
+                        record
+                );
+
+        producerRecord
+                .headers()
+                .add(
+                        new RecordHeader("messageId", messageId.toString().getBytes())
+                );
+
+        kafkaTemplate.send(producerRecord);
+        log.info("Message sent: {}", producerRecord);
+    }
+
+
 }

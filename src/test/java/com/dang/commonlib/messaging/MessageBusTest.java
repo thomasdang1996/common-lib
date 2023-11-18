@@ -6,7 +6,6 @@ import lombok.Data;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.internals.RecordHeader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -43,7 +42,7 @@ public class MessageBusTest {
         when(environment.getProperty(isA(String.class)))
                 .thenReturn(topic);
 
-        messageBus.sendMessage(message, List.of(new RecordHeader("messageId", "12234id".getBytes())));
+        messageBus.sendMessage(message, Map.of("messageId", "12234id"));
 
         verify(kafkaTemplate)
                 .send(producerRecordCaptor.capture());
@@ -58,7 +57,7 @@ public class MessageBusTest {
         when(environment.getProperty(isA(String.class)))
                 .thenReturn(null);
 
-        assertThatThrownBy(() -> messageBus.sendMessage(message, List.of()))
+        assertThatThrownBy(() -> messageBus.sendMessage(message, Map.of()))
                 .isInstanceOf(MissingTopicDefinitionException.class)
                 .hasMessage("Missing or null property com.dang.commonlib.messaging.com.dang.commonlib.messaging.MessageBusTest.MockMessage.topic");
     }
