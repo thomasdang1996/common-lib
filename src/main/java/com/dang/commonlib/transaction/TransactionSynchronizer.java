@@ -1,6 +1,7 @@
 package com.dang.commonlib.transaction;
 
 import com.dang.commonlib.utils.StringUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
@@ -38,15 +39,15 @@ public class TransactionSynchronizer {
             throw new RuntimeException(e);
         }
     }
-
+@Transactional
     public void saveEventAndContinue(UUID eventId, Object event) {
         Transaction transaction = transactionRepository
-                .updateResponseMessageByEventId(
-                        eventId,
-                        stringUtils.toString(event))
+                .findByMessageId(eventId)
                 .orElseThrow(
                         () -> new RuntimeException("Transaction record with eventId " + eventId + " was not found. ")
                 );
+        transaction.setReplyMessage(stringUtils.toString(event));
+        transactionRepository.save(transaction);
         long threadId = transaction.getThreadId();
         Thread eventThread = getThread(threadId);
         synchronized (eventThread) {
