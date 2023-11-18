@@ -29,7 +29,7 @@ public class MessageBus {
         List<RecordHeader> headers = headerMap
                 .entrySet()
                 .stream()
-                .map(h -> new RecordHeader(h.getKey().getValue(), h.getValue().getBytes()))
+                .map(h -> new RecordHeader(h.getKey().getCode(), h.getValue().getBytes()))
                 .toList();
 
         ProducerRecord<String, SpecificRecord> producerRecord =
