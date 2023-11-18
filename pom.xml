@@ -42,6 +42,7 @@
         <mapstruct.version>1.5.3.Final</mapstruct.version>
         <avro.version>1.11.1</avro.version>
         <confluent.version>7.5.0</confluent.version>
+        <jackson.version>2.15.2</jackson.version>
     </properties>
     <dependencies>
         <!--SPRING-BOOT STARTERS-->
@@ -79,16 +80,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!--MESSAGING-->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
@@ -110,6 +101,12 @@
             <version>${confluent.version}</version>
         </dependency>
 
+<!--        OBJECT MAPPING-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

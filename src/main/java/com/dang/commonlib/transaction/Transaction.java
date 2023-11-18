@@ -17,5 +17,7 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private long threadId;
-    private UUID eventId;
+    private UUID messageId;
+    private String requestMessage;
+    private String replyMessage;
 }
