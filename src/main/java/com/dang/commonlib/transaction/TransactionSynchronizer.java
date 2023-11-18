@@ -1,7 +1,6 @@
 package com.dang.commonlib.transaction;
 
 import com.dang.commonlib.utils.StringUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
@@ -23,6 +22,7 @@ public class TransactionSynchronizer {
         transaction.setMessageId(messageId);
         transaction.setThreadId(threadId);
         transaction.setRequestMessage(stringUtils.toString(message));
+        transaction.setRequestClassName(message.getClass().getTypeName());
         transactionRepository.save(transaction);
         log.info("Transaction registered, threadId: " + threadId);
         return threadId;
@@ -39,7 +39,7 @@ public class TransactionSynchronizer {
             throw new RuntimeException(e);
         }
     }
-@Transactional
+
     public void saveEventAndContinue(UUID eventId, Object event) {
         Transaction transaction = transactionRepository
                 .findByMessageId(eventId)
@@ -47,6 +47,7 @@ public class TransactionSynchronizer {
                         () -> new RuntimeException("Transaction record with eventId " + eventId + " was not found. ")
                 );
         transaction.setReplyMessage(stringUtils.toString(event));
+        transaction.setReplyClassName(event.getClass().getTypeName());
         transactionRepository.save(transaction);
         long threadId = transaction.getThreadId();
         Thread eventThread = getThread(threadId);
@@ -57,24 +58,26 @@ public class TransactionSynchronizer {
     }
 
     public SpecificRecord getReplyMessage(UUID eventId) {
+        Transaction transaction = transactionRepository
+                .findByMessageId(eventId)
+                .orElseThrow(
+                        () -> new RuntimeException("transaction was not found, eventId: " + eventId)
+                );
         return stringUtils.toObject(
-                transactionRepository
-                        .getReplyMessageByEventId(eventId)
-                        .orElseThrow(
-                                () -> new RuntimeException("ReplyMessage was not found, eventId: " + eventId)
-                        ),
-                SpecificRecord.class
+                transaction.getReplyMessage(),
+                transaction.getReplyClassName()
         );
     }
 
-    public Object getRequestMessage(UUID eventId) {
+    public SpecificRecord getRequestMessage(UUID eventId) {
+        Transaction transaction = transactionRepository
+                .findByMessageId(eventId)
+                .orElseThrow(
+                        () -> new RuntimeException("transaction was not found, eventId: " + eventId)
+                );
         return stringUtils.toObject(
-                transactionRepository
-                        .getRequestMessageByEventId(eventId)
-                        .orElseThrow(
-                                () -> new RuntimeException("RequestMessage was not found, eventId: " + eventId)
-                        ),
-                Object.class
+                transaction.getRequestMessage(),
+                transaction.getRequestClassName()
         );
     }
 

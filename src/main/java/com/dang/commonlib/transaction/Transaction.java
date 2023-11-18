@@ -19,5 +19,7 @@ public class Transaction {
     private long threadId;
     private UUID messageId;
     private String requestMessage;
+    private String requestClassName;
     private String replyMessage;
+    private String replyClassName;
 }
