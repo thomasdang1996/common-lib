@@ -9,12 +9,15 @@ import java.util.UUID;
 
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 
-    @Query("SELECT t FROM Transaction t WHERE t.messageId=?1")
-    Optional<Transaction> findByMessageId(UUID messageId);
+    @Query("SELECT new com.dang.commonlib.transaction.MessageDto (t.messageId,t.replyClassName,t.replyMessage) FROM Transaction t WHERE t.messageId=?1")
+    Optional<MessageDto> getReplyMessage(UUID messageId);
 
-    @Query("SELECT t.replyMessage FROM Transaction t WHERE t.messageId=?1")
-    Optional<String> getReplyMessageByEventId(UUID messageId);
+    @Query("SELECT new com.dang.commonlib.transaction.MessageDto (t.messageId,t.requestClassName,t.requestMessage) FROM Transaction t WHERE t.messageId=?1")
+    Optional<MessageDto> getRequestMessage(UUID messageId);
 
-    @Query("SELECT t.requestMessage FROM Transaction t WHERE t.messageId=?1")
-    Optional<String> getRequestMessageByEventId(UUID messageId);
+    @Query("SELECT t.threadId FROM Transaction t WHERE t.messageId=?1")
+    Optional<Long> getThreadIdByMessageId(UUID messageId);
+    @Query("UPDATE Transaction t SET t.replyMessage=?2, t.replyClassName=?3 WHERE t.messageId=?1")
+    @Modifying
+    void updateReplyMessage(UUID messageId, String replyMessage, String replyClassName);
 }
