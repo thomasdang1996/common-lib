@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
+/**
+ * Class for sending messages
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -23,6 +25,14 @@ public class MessageBus {
     private final KafkaTemplate<String, SpecificRecord> kafkaTemplate;
     private final Environment environment;
 
+    /**
+     * Sends a message with headers. Topic is configured with {@link #getTopic(SpecificRecord)} from properties file.
+     * To configure a topic for the message, add following property to your application.properties:<br>
+     * com.dang.commonlib.messaging.[full-class-name-of-the-message].topic = [topic-value]<br>
+     * Example: com.dang.commonlib.messaging.avrogenerated.accountmanager.AccountCreated.topic=accountmanager-event-topic
+     * @param record message to be sent
+     * @param headerMap map of the header with its values
+     */
     public void sendMessage(SpecificRecord record, Map<HeaderEnum, String> headerMap) {
         log.info("Sending message: {}", record);
 
@@ -59,25 +69,4 @@ public class MessageBus {
         }
         return topic;
     }
-
-    public void sendMessage(SpecificRecord record, UUID messageId) {
-        log.info("Sending message: {}", record);
-
-        ProducerRecord<String, SpecificRecord> producerRecord =
-                new ProducerRecord<>(
-                        getTopic(record),
-                        record
-                );
-
-        producerRecord
-                .headers()
-                .add(
-                        new RecordHeader("messageId", messageId.toString().getBytes())
-                );
-
-        kafkaTemplate.send(producerRecord);
-        log.info("Message sent: {}", producerRecord);
-    }
-
-
 }

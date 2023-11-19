@@ -38,8 +38,8 @@ public class StringUtils {
 
     /**
      * Get type reference by the className
-     * @param fullClassName
-     * @return
+     * @param fullClassName reference of the class (e.g. com.dang.commonlib.utils.StringUtils)
+     * @return type reference
      */
     private TypeReference<? extends SpecificRecord> getTypeReference(String fullClassName) {
         return new TypeReference<>() {

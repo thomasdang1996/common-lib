@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+/**
+ * Class for managing asynchronous calls (transactions).
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -14,13 +17,23 @@ public class AsyncManager {
     private final TransactionService transactionService;
     private static final long TIMEOUT_MILLIS = 60000;
 
-    public long registerTransaction(UUID messageId, Object message) {
+    /**
+     * Registers a transaction with the respective object
+     * @param transactionId id of the transaction
+     * @param message object sent during said transaction
+     * @return id of the waiting thread
+     */
+    public long registerTransaction(UUID transactionId, Object message) {
         long threadId = Thread.currentThread().getId();
-        transactionService.saveTransaction(messageId, message, threadId);
+        transactionService.saveTransaction(transactionId, message, threadId);
         log.info("Transaction registered, threadId: " + threadId);
         return threadId;
     }
 
+    /**
+     * Will wait until {@link #saveEventAndContinue(UUID, Object)} is called
+     * @param threadId id of the waiting thread
+     */
     public void waitForSync(long threadId) {
         try {
             log.info("Wait for event to arrive.");
@@ -33,6 +46,11 @@ public class AsyncManager {
         }
     }
 
+    /**
+     * Saves received message and resumes with the waiting thread at {@link #waitForSync(long)}.
+     * @param messageId id of the received message
+     * @param message received message
+     */
     public void saveEventAndContinue(UUID messageId, Object message) {
         long threadId = transactionService.getThreadId(messageId);
         Thread eventThread = getThread(threadId);
@@ -43,14 +61,29 @@ public class AsyncManager {
         log.info("Continuing transaction");
     }
 
+    /**
+     * Will get received message previously stored with {@link #saveEventAndContinue(UUID, Object)}
+     * @param messageId id of the message
+     * @return message of type {@link SpecificRecord}
+     */
     public SpecificRecord getReplyMessage(UUID messageId) {
         return transactionService.getReplyMessage(messageId);
     }
 
+    /**
+     * Will get sent message previously stored with {@link #registerTransaction(UUID, Object)}
+     * @param messageId id of the message
+     * @return message of type {@link SpecificRecord}
+     */
     public SpecificRecord getRequestMessage(UUID messageId) {
        return transactionService.getRequestMessage(messageId);
     }
 
+    /**
+     * Get thread by the thread Id
+     * @param threadId id of the thread
+     * @return thread
+     */
     private Thread getThread(long threadId) {
         return Thread.getAllStackTraces()
                 .keySet()
